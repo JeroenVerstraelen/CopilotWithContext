@@ -2,7 +2,6 @@
 // Import the module and reference it with the alias vscode in your code below
 import G = require('glob');
 import * as vscode from 'vscode';
-import { Config } from './Config';
 import { SnippetComments } from './SnippetComments';
 import { SnippetFile } from './SnippetFile';
 
@@ -10,48 +9,21 @@ import { SnippetFile } from './SnippetFile';
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 	// Snippet file commands.
-	let disposable = vscode.commands.registerCommand('copilot-with-context.addSelectedTextAsSnippet', () => addSelectedTextToSnippetFile());
-	let disposable2 = vscode.commands.registerCommand('copilot-with-context.pasteSnippetAsCommentUsingPopupAsInput', () => selectSnippetAndPasteItUsingPopupAsInput());
-	let disposable10 = vscode.commands.registerCommand('copilot-with-context.pasteSnippetAsCommentUsingCursorAsInput', () => selectSnippetAndPasteItUsingCursorAsInput());
+	let addSnippetDisposable = vscode.commands.registerCommand('copilot-with-context.addSelectedTextAsSnippet', () => addSelectedTextToSnippetFile());
+	let pasteSnippetDisposable = vscode.commands.registerCommand('copilot-with-context.pasteSnippet', () => selectSnippetAndPasteItUsingCursorAsInput());
 	
 	// Symbol commands.
-	let disposable4 = vscode.commands.registerCommand('copilot-with-context.pasteSymbolUsingSelectedTextAsInput', () => pasteSymbolAsCommentUsingSelectedTextAsInput());
-	let disposable5 = vscode.commands.registerCommand('copilot-with-context.pasteSymbolUsingPopupAsInput', () => pasteSymbolAsCommentUsingPopupAsInput());
-	let disposable9 = vscode.commands.registerCommand('copilot-with-context.pasteSymbol', () => pasteSymbolAsCommentUsingCursorAsInput());
-	let disposable6 = vscode.commands.registerCommand('copilot-with-context.rewriteRestOfFunction', () => rewriteRestOfFunction());
-	let disposable8 = vscode.commands.registerCommand('copilot-with-context.fixFunction', () => fixFunction());
-
-	// API helpers
-	// Q: search by function name
-	// A1: Just use snippets?
-	// Geotrellis.addLayer =>
-	// title: addLayer [Geotrellis]
-	// Snippet:
-	/*
-		val layer = new Layer()
-		val zoomLevel = 3
-		Geotrellis.addLayer(layer, zoomLevel)
-	*/
-
-	// Command, use clipboard as context.
-	
-	// Add similar to above but with name.
-	// Copy line above but with context.
-	let disposable7 = vscode.commands.registerCommand('copilot-with-context.copyLineWithContext', () => copyLineWithContext());
+	let pasteSymbolDisposable = vscode.commands.registerCommand('copilot-with-context.pasteSymbolAsSnippet', () => pasteSymbolAsCommentUsingCursorAsInput());
+	let rewriteRestOfFunctionDisposable = vscode.commands.registerCommand('copilot-with-context.rewriteRestOfFunction', () => rewriteRestOfFunction());
 
 	// Snippet removal commands.
-	let disposable3 = vscode.commands.registerCommand('copilot-with-context.removeSnippetsFromFile', () => SnippetComments.removeFromFile());
+	let removeSnippetsDisposable = vscode.commands.registerCommand('copilot-with-context.removeSnippetsFromFile', () => SnippetComments.removeFromFile());
 
-	context.subscriptions.push(disposable);
-	context.subscriptions.push(disposable2);
-	context.subscriptions.push(disposable4);
-	context.subscriptions.push(disposable5);
-	context.subscriptions.push(disposable3);
-	context.subscriptions.push(disposable6);
-	context.subscriptions.push(disposable7);
-	context.subscriptions.push(disposable8);
-	context.subscriptions.push(disposable9);
-	context.subscriptions.push(disposable10);
+	context.subscriptions.push(addSnippetDisposable);
+	context.subscriptions.push(pasteSnippetDisposable);
+	context.subscriptions.push(pasteSymbolDisposable);
+	context.subscriptions.push(rewriteRestOfFunctionDisposable);
+	context.subscriptions.push(removeSnippetsDisposable);
 }
 
 // this method is called when your extension is deactivated

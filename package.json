@@ -16,58 +16,33 @@
 	],
 	"activationEvents": [
 		"onCommand:copilot-with-context.addSelectedTextAsSnippet",
-		"onCommand:copilot-with-context.pasteSnippetAsCommentUsingPopupAsInput",
-		"onCommand:copilot-with-context.pasteSnippetAsCommentUsingCursorAsInput",
+		"onCommand:copilot-with-context.pasteSnippet",
 		"onCommand:copilot-with-context.removeSnippetsFromFile",
-		"onCommand:copilot-with-context.pasteSymbolUsingSelectedTextAsInput",
-		"onCommand:copilot-with-context.pasteSymbolUsingPopupAsInput",
-		"onCommand:copilot-with-context.pasteSymbol",
-		"onCommand:copilot-with-context.rewriteRestOfFunction",
-		"onCommand:copilot-with-context.copyLineWithContext",
-		"onCommand:copilot-with-context.fixFunction"
+		"onCommand:copilot-with-context.pasteSymbolAsSnippet",
+		"onCommand:copilot-with-context.rewriteRestOfFunction"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
 				"command": "copilot-with-context.addSelectedTextAsSnippet",
-				"title": "Copilot: Add selected text to the copilot snippet file to be used later"
+				"title": "Copilot: Add selected text as a snippet (copilot_snippets.json)"
 			},
 			{
-				"command": "copilot-with-context.pasteSnippetAsCommentUsingPopupAsInput",
-				"title": "Copilot: Paste copilot snippet as a comment above your cursor using a popup as input"
+				"command": "copilot-with-context.pasteSnippet",
+				"title": "Copilot: Paste copilot snippet as a comment above your cursor"
 			},
-			{
-				"command": "copilot-with-context.pasteSnippetAsCommentUsingCursorAsInput",
-				"title": "Copilot: Paste copilot snippet as a comment above your cursor using the word before your cursor as input"
-			}, 
 			{
 				"command": "copilot-with-context.removeSnippetsFromFile",
-				"title": "Copilot: Remove all copilot comment snippets from the current file"
+				"title": "Copilot: Remove all snippets from the current file"
 			},
 			{
-				"command": "copilot-with-context.pasteSymbolUsingSelectedTextAsInput",
-				"title": "Copilot: paste a symbol from your workspace [Selected Text]"
-			},
-			{
-				"command": "copilot-with-context.pasteSymbolUsingPopupAsInput",
-				"title": "Copilot: paste a symbol from your workspace [Popup]"
-			},
-			{
-				"command": "copilot-with-context.pasteSymbol",
-				"title": "Copilot: paste a symbol from your workspace [Cursor Position]"
+				"command": "copilot-with-context.pasteSymbolAsSnippet",
+				"title": "Copilot: paste a symbol from your workspace as a snippet"
 			},
 			{
 				"command": "copilot-with-context.rewriteRestOfFunction",
 				"title": "Copilot: Rewrite the rest of the function below your cursor"
-			},
-			{
-				"command": "copilot-with-context.copyLineWithContext",
-				"title": "Copilot: Copy line above with context"
-			},
-			{
-				"command": "copilot-with-context.fixFunction",
-				"title": "Copilot: Fix function"
 			}
 		]
 	},
