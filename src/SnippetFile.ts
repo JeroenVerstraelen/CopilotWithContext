@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { QuickPickOptions } from 'vscode';
 import { Config } from "./Config";
 import { SnippetComments } from "./SnippetComments";
+const path = require('path');
 
 export class SnippetFile {
 	static fileName = Config.snippetFileName;
@@ -13,11 +14,15 @@ export class SnippetFile {
 			return '';
 		}
 		let workspacePath = workspaceFolders[0].uri.fsPath;
-		return workspacePath + '/' + SnippetFile.fileName;
+		return path.join(workspacePath, SnippetFile.fileName);
 	}
 
 	static getSnippets(): any[] {
 		let jsonFile = SnippetFile.getAbsoluteFilePath();
+		// Check if the file exists, create it if not.
+		if (!fs.existsSync(jsonFile)) {
+			fs.writeFileSync(jsonFile, '[]');
+		}
 		let json = fs.readFileSync(jsonFile, 'utf8');
 		let snippets = JSON.parse(json);
 		return snippets;
