@@ -3,10 +3,10 @@
 	"displayName": "Copilot with context",
 	"publisher": "JeroenV",
 	"description": "",
-	"version": "0.0.1",
+	"version": "0.0.4",
 	"repository": {
 		"type": "git",
-		"url": "git://github.com/username/repository.git"
+		"url": "https://github.com/JeroenVerstraelen/CopilotWithContext"
 	},
 	"engines": {
 		"vscode": "^1.68.0"
