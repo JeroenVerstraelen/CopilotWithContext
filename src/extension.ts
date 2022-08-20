@@ -13,7 +13,7 @@ export function activate(context: vscode.ExtensionContext) {
 	let pasteSnippetDisposable = vscode.commands.registerCommand('copilot-with-context.pasteSnippet', () => selectSnippetAndPasteItUsingCursorAsInput());
 	
 	// Symbol commands.
-	let pasteSymbolDisposable = vscode.commands.registerCommand('copilot-with-context.pasteSymbolAsSnippet', () => pasteSymbolAsCommentUsingCursorAsInput());
+	let pasteSymbolDisposable = vscode.commands.registerCommand('copilot-with-context.pasteSymbolAsSnippet', () => pasteSymbolAsCommentUsingPopupAsInput());
 	let rewriteRestOfFunctionDisposable = vscode.commands.registerCommand('copilot-with-context.rewriteRestOfFunction', () => rewriteRestOfFunction());
 
 	// Snippet removal commands.
