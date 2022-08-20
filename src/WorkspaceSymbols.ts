@@ -8,7 +8,9 @@ export class WorkspaceSymbol {
 
 export class WorkspaceSymbols {
 	static async getWorkspaceSymbolInformation(name: string, filterKind: vscode.SymbolKind) {
-		let fileEnding = Config.languageFileEnding;
+		let editor = vscode.window.activeTextEditor;
+		if (!editor) { return []; }
+		let fileEnding = Config.languageFileExtension(editor.document.languageId);
 		let symbols: vscode.SymbolInformation[] = await commands.executeCommand('vscode.executeWorkspaceSymbolProvider', name);
 		let filteredSymbols = symbols.filter(symbol => symbol.kind === filterKind && symbol.location.uri.path.includes(fileEnding));
 		return filteredSymbols;
@@ -30,7 +32,9 @@ export class WorkspaceSymbols {
 	}
 
 	static async getAny(name: string): Promise<vscode.SymbolInformation[]> {
-		let fileEnding = Config.languageFileEnding;
+		let editor = vscode.window.activeTextEditor;
+		if (!editor) { return []; }
+		let fileEnding = Config.languageFileExtension(editor.document.languageId);
 		let symbols: vscode.SymbolInformation[] = await commands.executeCommand('vscode.executeWorkspaceSymbolProvider', name);
 		let filteredSymbols = symbols.filter(symbol => symbol.location.uri.path.includes(fileEnding));
 		return filteredSymbols;

@@ -10,9 +10,9 @@ export class SnippetComments {
 
 	static async pasteSnippetAsComment(snippet: string): Promise<void> {
 		// TODO: Use TextLine.firstNonWhitespaceCharacterIndex to get the indentation level.
-		let commentSymbol = Config.commentSymbol;
 		let editor = vscode.window.activeTextEditor;
 		if (editor) {
+			let commentSymbol = Config.commentSymbol(editor.document.languageId);
 			// Insert the snippet one live above the cursor position.
 			let cursorPosition = editor.selection.active;
 			let insertPosition = new vscode.Position(cursorPosition.line, 0);
@@ -23,7 +23,7 @@ export class SnippetComments {
 			// if (firstWordOfSnippetMatch) {
 			// 	firstLettersOfSnippet = firstWordOfSnippetMatch[0].substring(0, 3);
 			// }
-			let taggedSelection = Config.snippetStartSymbol + '\n' + snippet + '\n' + Config.snippetEndSymbol;
+			let taggedSelection = Config.snippetStartSymbol(editor.document.languageId) + '\n' + snippet + '\n' + Config.snippetEndSymbol(editor.document.languageId);
 			// Add a comment to each line of the selection.
 			let commentedLines = taggedSelection.split('\n').map((line) => indentation + commentSymbol + line);
 			await editor.edit(editBuilder => {
@@ -176,9 +176,9 @@ export class SnippetComments {
 		if (!editor) { return; }
 
 		// Set up regex.
-		let commentSymbol = Config.commentSymbol;
-		let snippetStartSymbol = Config.snippetStartSymbol;
-		let snippetEndSymbol = Config.snippetEndSymbol;
+		let commentSymbol = Config.commentSymbol(editor.document.languageId);
+		let snippetStartSymbol = Config.snippetStartSymbol(editor.document.languageId);
+		let snippetEndSymbol = Config.snippetEndSymbol(editor.document.languageId);
 		var newline = '\r\n';
 		if (editor.document.eol === vscode.EndOfLine.LF) {
 			newline = '\n';
