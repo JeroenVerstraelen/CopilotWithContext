@@ -25,4 +25,8 @@ export class Config {
 	static languageFileExtension(languageId: string) {
 		return Config._ext_config(languageId).get('languageFileExtension', '.go')
 	}
+
+	static collapseSnippetComments(languageId: string) {
+		return Config._ext_config(languageId).get('collapseSnippetComments', true)
+	}
 }

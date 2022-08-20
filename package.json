@@ -76,6 +76,12 @@
 				"default": ".py",
 				"description": "The file extension to look for symbols. You should not change this unless no symbols are showing in your search bar.",
 				"scope": "language-overridable"
+			  },
+			  "copilotcontext.collapseSnippetComments": {
+				"type": "boolean",
+				"default": true,
+				"description": "Collapse snippet comments.",
+				"scope": "language-overridable"
 			  }
 			}
 		},

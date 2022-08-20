@@ -30,9 +30,11 @@ export class SnippetComments {
 				editBuilder.insert(insertPosition, commentedLines.join('\n') + '\n' + indentation + firstLettersOfSnippet + '\n');
 			})
 
-			// Collapse the insertPosition.
-			editor.selection = new vscode.Selection(insertPosition.line, 0, insertPosition.line, 0);
-			await vscode.commands.executeCommand('editor.fold');
+			if (Config.collapseSnippetComments(editor.document.languageId)) {
+				// Collapse the insertPosition.
+				editor.selection = new vscode.Selection(insertPosition.line, 0, insertPosition.line, 0);
+				await vscode.commands.executeCommand('editor.fold');
+			}
 			
 			// Move the cursor one line below the end of the snippet.
 			let endOfSnippetLine = editor.document.lineAt(cursorPosition.line + commentedLines.length);
