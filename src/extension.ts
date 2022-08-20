@@ -43,8 +43,8 @@ async function addSelectedTextToSnippetFile(): Promise<void> {
 		return;
 	}
 	// Show snippet to user, and ask for permission to write it to file.
-	vscode.window.showInformationMessage('Added selected text to ' + SnippetFile.fileName);
 	SnippetFile.addSnippet(snippet, title);
+	vscode.window.showInformationMessage('Added selected text to ' + SnippetFile.fileName);
 }
 
 async function selectSnippetAndPasteItUsingPopupAsInput() {
