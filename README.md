@@ -13,7 +13,7 @@ Simple plugin that adds snippets and other tools for Github copilot to improve p
 Quickly reformat a function.
 
 Example: Both parameters are switched for all assertions in only a few seconds. 
-![](https://i.imgur.com/tqICskk.gif)
+![](https://i.imgur.com/4xrWIMC.gif)
 
 ### Add snippet
 Select a section of code and add it as snippet for later.
