@@ -1,12 +1,21 @@
 import * as vscode from 'vscode';
 import { commands } from 'vscode';
-import { Config } from "./Config";
+import { Config } from "../utils/Config";
+
+// <snippet>
+// 
+// </snippet>
 
 export class WorkspaceSymbol {
 	constructor(public name: string, public uri: vscode.Uri, public range: vscode.Range) { }
 }
 
 export class WorkspaceSymbols {
+
+	static symbolInfoToWorkspaceSymbol(symbolInformation: vscode.SymbolInformation): WorkspaceSymbol {
+		return new WorkspaceSymbol(symbolInformation.name, symbolInformation.location.uri, symbolInformation.location.range);
+	}
+
 	static async getWorkspaceSymbolInformation(name: string, filterKind: vscode.SymbolKind) {
 		let editor = vscode.window.activeTextEditor;
 		if (!editor) { return []; }
@@ -17,13 +26,6 @@ export class WorkspaceSymbols {
 	}
 
 	static async getDocumentSymbol(inputSymbol: WorkspaceSymbol): Promise<vscode.DocumentSymbol | undefined> {
-		// return commands.executeCommand<vscode.DocumentSymbol[]>('vscode.executeDocumentSymbolProvider', symbolInformation.location.uri)
-		// .then(documentSymbols => {
-		// 	if (documentSymbols !== undefined) {
-		// 		let documentSymbol: vscode.DocumentSymbol | undefined = documentSymbols.find(s => s.name === symbolInformation.name);
-		// 		return documentSymbol;
-		// 	}
-		// });
 		let documentSymbols: vscode.DocumentSymbol[] = await vscode.commands.executeCommand('vscode.executeDocumentSymbolProvider', inputSymbol.uri);
 		if (documentSymbols !== undefined) {
 			let documentSymbol: vscode.DocumentSymbol | undefined = documentSymbols.find(s => s.range.start.line === inputSymbol.range.start.line);
@@ -82,24 +84,24 @@ export class WorkspaceSymbols {
 		return classMethods.map((method, index) => new WorkspaceSymbol(method.name, uris[index], method.range));
 	}
 
-	static async getMethodsOfClass(className: string): Promise<vscode.DocumentSymbol[]> {
-		let classes = await WorkspaceSymbols.getClasses(className);
-		if (classes.length > 0) {
-			return WorkspaceSymbols.getMethodsOfClassSymbol(classes[0])
-		}
-		return [];
-	}
-
-	static async getMethodsOfClassSymbol(classSymbol: vscode.SymbolInformation): Promise<vscode.DocumentSymbol[]> {
-		let classWorkspaceSymbol = new WorkspaceSymbol(classSymbol.name, classSymbol.location.uri, classSymbol.location.range);
-		let classDocumentSymbol: vscode.DocumentSymbol | undefined = await WorkspaceSymbols.getDocumentSymbol(classWorkspaceSymbol);
-		if (classDocumentSymbol !== undefined) {
-			return classDocumentSymbol.children.filter(child => child.kind === vscode.SymbolKind.Method);
-		}
-		return [];
-	}
-
 	static async getClasses(name: string): Promise<vscode.SymbolInformation[]> {
 		return WorkspaceSymbols.getWorkspaceSymbolInformation(name, vscode.SymbolKind.Class);
 	}
+
+	// static async _getMethodsOfClass(className: string): Promise<vscode.DocumentSymbol[]> {
+	// 	let classes = await WorkspaceSymbols.getClasses(className);
+	// 	if (classes.length > 0) {
+	// 		return WorkspaceSymbols._getMethodsOfClassSymbol(classes[0])
+	// 	}
+	// 	return [];
+	// }
+
+	// static async _getMethodsOfClassSymbol(classSymbol: vscode.SymbolInformation): Promise<vscode.DocumentSymbol[]> {
+	// 	let classWorkspaceSymbol = new WorkspaceSymbol(classSymbol.name, classSymbol.location.uri, classSymbol.location.range);
+	// 	let classDocumentSymbol: vscode.DocumentSymbol | undefined = await WorkspaceSymbols.getDocumentSymbol(classWorkspaceSymbol);
+	// 	if (classDocumentSymbol !== undefined) {
+	// 		return classDocumentSymbol.children.filter(child => child.kind === vscode.SymbolKind.Method);
+	// 	}
+	// 	return [];
+	// }
 }

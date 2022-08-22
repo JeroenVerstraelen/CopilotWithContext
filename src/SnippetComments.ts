@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
 import { QuickPickOptions } from 'vscode';
-import { SnippetFile } from './SnippetFile';
-import { WorkspaceSymbol, WorkspaceSymbols } from './WorkspaceSymbols';
-import { Config } from "./Config";
-import { SymbolToString } from './SymbolToString';
+import { WorkspaceSymbol, WorkspaceSymbols } from './sources/WorkspaceSymbols';
+import { Config } from "./utils/Config";
+import { SymbolToString } from './sources/SymbolToString';
 
 
 export class SnippetComments {
@@ -44,7 +43,12 @@ export class SnippetComments {
 		}
 	}
 
-	static async pasteSymbolAsComment(inputFunction: () => Promise<string>): Promise<void> {
+	static async pasteSymbolAsComment(symbol: vscode.SymbolInformation): Promise<void> {
+		let snippet = await SymbolToString.anyToString(symbol);
+		SnippetComments.pasteSnippetAsComment(snippet);
+	}
+
+	static async pasteSymbolAsCommentUsingInputFunction(inputFunction: () => Promise<string>): Promise<void> {
 		// Ask user if we should search for structs, function, classes or everything.
 		let options: QuickPickOptions = {
 			matchOnDescription: true,
@@ -70,11 +74,10 @@ export class SnippetComments {
 			if (selectedStructName) {
 				let selectedStruct = structs.find((struct) => struct.name === selectedStructName);
 				if (selectedStruct) {
-					let structWorkspaceSymbol = new WorkspaceSymbol(selectedStruct.name, selectedStruct.location.uri, selectedStruct.location.range);
-					let selectedDocumentSymbol = await WorkspaceSymbols.getDocumentSymbol(structWorkspaceSymbol);
-					if (selectedDocumentSymbol) {
-						snippet = await SymbolToString.structToString(selectedDocumentSymbol, selectedStruct.location.uri, 0, maxReferenceDepth);
-					}
+					snippet = await SymbolToString.symbolWithChildrenToString(
+						new WorkspaceSymbol(selectedStruct.name, selectedStruct.location.uri, selectedStruct.location.range),
+						maxReferenceDepth
+					)
 				}
 			}
 		}
@@ -106,39 +109,21 @@ export class SnippetComments {
 						let editor = vscode.window.activeTextEditor;
 						if (!editor) { return; }
 
-						let selectedFunction = functions.find((functionSymbol) => functionSymbol.name === selectedFunctionName);
-						if (!selectedFunction) {
-							let selectedMethod = methods.find((methodSymbol) => methodSymbol.name === selectedFunctionName);
-							if (selectedMethod) {
-								let uri = selectedMethod.uri;
-								let document = await vscode.workspace.openTextDocument(uri);
-								let start = selectedMethod.range.start
-								if (userSymbolKindSelection === 'function signature') {
-									snippet = document.lineAt(start.line).text;
-									break;
-								} 
-								let methodDocSymbol: vscode.DocumentSymbol | undefined = await WorkspaceSymbols.getDocumentSymbol(selectedMethod);
-								if (methodDocSymbol) {
-									let end = methodDocSymbol?.range.end;
-									snippet = document.getText(new vscode.Range(start, end));
-									break;
-								}
-							}
+						let selectedFunction = functions.find((functionSymbol) => functionSymbol.name === selectedFunctionName)
+						let selectedSymbol = null;
+						if (selectedFunction) {
+							selectedSymbol = await WorkspaceSymbols.symbolInfoToWorkspaceSymbol(selectedFunction);
 						} else {
-							let uri = selectedFunction.location.uri;
-							let document = await vscode.workspace.openTextDocument(uri);
-							let start = selectedFunction.location.range.start
+							selectedSymbol = methods.find((methodSymbol) => methodSymbol.name === selectedFunctionName);
+						}
+
+						if (selectedSymbol) {
 							if (userSymbolKindSelection === 'function signature') {
-								snippet = document.lineAt(start.line).text;
+								snippet = await SymbolToString.functionSignatureToString(selectedSymbol)
 								break;
 							}
-							let selectedFunctionWorkspaceSymbol = new WorkspaceSymbol(selectedFunction.name, uri, selectedFunction.location.range);
-							let functionDocSymbol: vscode.DocumentSymbol | undefined = await WorkspaceSymbols.getDocumentSymbol(selectedFunctionWorkspaceSymbol);
-							if (functionDocSymbol) {
-								let end = functionDocSymbol.range.end;
-								snippet = document.getText(new vscode.Range(start, end));
-								break;
-							}
+							snippet = await SymbolToString.workspaceSymbolToString(selectedSymbol)
+							break;
 						}
 					}
 					break;
@@ -150,7 +135,7 @@ export class SnippetComments {
 					if (selectedClassName) {
 						let selectedClass = classes.find((classSymbol) => classSymbol.name === selectedClassName);
 						if (selectedClass) {
-							snippet = 'class ' + selectedClass.name + ' {\n\n}';
+							snippet = await SymbolToString.symbolWithChildrenToString(await WorkspaceSymbols.symbolInfoToWorkspaceSymbol(selectedClass), 0, 0);
 						}
 					}
 					break;

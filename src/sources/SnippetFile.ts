@@ -1,12 +1,12 @@
 import fs = require('fs');
 import * as vscode from 'vscode';
 import { QuickPickOptions } from 'vscode';
-import { Config } from "./Config";
-import { SnippetComments } from "./SnippetComments";
+import { Config } from "../utils/Config";
+import { SnippetComments } from "../SnippetComments";
 const path = require('path');
 
 export class SnippetFile {
-	static fileName = Config.snippetFileName;
+	static fileName = Config.snippetFileName('');
 
 	static getAbsoluteFilePath(): string {
 		let workspaceFolders = vscode.workspace.workspaceFolders;

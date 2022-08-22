@@ -3,17 +3,18 @@
 import G = require('glob');
 import * as vscode from 'vscode';
 import { SnippetComments } from './SnippetComments';
-import { SnippetFile } from './SnippetFile';
+import { SnippetFile } from './sources/SnippetFile';
+import { WorkspaceSymbols } from './sources/WorkspaceSymbols';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 	// Snippet file commands.
 	let addSnippetDisposable = vscode.commands.registerCommand('copilot-with-context.addSelectedTextAsSnippet', () => addSelectedTextToSnippetFile());
-	let pasteSnippetDisposable = vscode.commands.registerCommand('copilot-with-context.pasteSnippet', () => selectSnippetAndPasteItUsingCursorAsInput());
+	let pasteSnippetDisposable = vscode.commands.registerCommand('copilot-with-context.pasteSnippet', () => pasteAnyAsSnippetUsingPopupAsInput());
 	
 	// Symbol commands.
-	let pasteSymbolDisposable = vscode.commands.registerCommand('copilot-with-context.pasteSymbolAsSnippet', () => pasteSymbolAsCommentUsingPopupAsInput());
+	let pasteSymbolDisposable = vscode.commands.registerCommand('copilot-with-context.pasteSymbolAsSnippet', () => pasteSymbolAsSnippetUsingPopupAsInput());
 	let rewriteRestOfFunctionDisposable = vscode.commands.registerCommand('copilot-with-context.rewriteRestOfFunction', () => rewriteRestOfFunction());
 
 	// Snippet removal commands.
@@ -88,13 +89,13 @@ async function selectSnippetAndPasteItUsingCursorAsInput() {
 		quickPick.matchOnDescription = true;
 		quickPick.matchOnDetail = true;
 		quickPick.placeholder = 'Select a snippet to add as a comment'
-		await quickPick.onDidAccept(async () => {
+		quickPick.onDidAccept(async () => {
 			let selection = quickPick.selectedItems[0].label;
 			if (selection === 'Search for usages of input') {
 				vscode.window.showInformationMessage('Search for usages of input not yet implemented');
 			}
 			else if (selection === 'Search for symbols') {
-				pasteSymbolAsCommentUsingPopupAsInput();	
+				pasteSymbolAsSnippetUsingPopupAsInput();	
 				quickPick.dispose();
 				return;
 			}
@@ -121,10 +122,61 @@ function pasteSymbolAsCommentUsingSelectedTextAsInput(): void {
 		}
 		return editor.document.getText(editor.selection);
 	}
-	SnippetComments.pasteSymbolAsComment(inputFunction);
+	SnippetComments.pasteSymbolAsCommentUsingInputFunction(inputFunction);
 }
 
-async function pasteSymbolAsCommentUsingPopupAsInput(): Promise<void> {
+// Selects a snippet or a symbol and pastes it as a comment.
+async function pasteAnyAsSnippetUsingPopupAsInput() {
+	// Create a popup that automatically updates the input box while the user is typing.
+	let quickPick: vscode.QuickPick<vscode.QuickPickItem> = await vscode.window.createQuickPick<vscode.QuickPickItem>()
+	quickPick.value = '';
+	quickPick.matchOnDescription = true;
+	quickPick.matchOnDetail = true;
+	quickPick.placeholder = 'Select a snippet to add as a comment'
+
+	// Sources
+	let snippets: any[] = SnippetFile.getSnippets();
+	let snippetQuickpickItems = snippets.map(snippet => <vscode.QuickPickItem>{ label: snippet.title, description: "Snippet" });
+	var symbols: vscode.SymbolInformation[] = []
+	
+	quickPick.onDidChangeValue(async (value) => {
+		if (value.length > 0) {
+			quickPick.busy = true;
+			// Filter sources and combine.
+			let filteredSnippets = snippetQuickpickItems.filter(snippet => snippet.label.includes(value));
+			symbols = await WorkspaceSymbols.getAny(value)
+			let symbolQuickpickItems = symbols.map(symbol => <vscode.QuickPickItem>{ label: symbol.name, description: "Symbol: " + symbol.kind.toString() });
+			let quickpickItems = filteredSnippets.concat(symbolQuickpickItems);
+			
+			// Show filtered sources.
+			quickPick.items = quickpickItems;
+			quickPick.busy = false;
+		}
+	});
+
+	quickPick.onDidAccept(async () => {
+		let selection: vscode.QuickPickItem = quickPick.selectedItems[0];
+		let label = selection.label;
+		let description = selection.description;
+		if (description && description.includes('Symbol')) {
+			let symbol = symbols.find(symbol => symbol.name === label);
+			if (!symbol) {
+				vscode.window.showErrorMessage('Symbol not found');
+				return;
+			}
+			SnippetComments.pasteSymbolAsComment(symbol);
+		} else {
+			let snippet = snippets.find(snippet => snippet.title === selection).snippet;
+			SnippetComments.pasteSnippetAsComment(snippet);
+		}
+		quickPick.dispose();
+	});
+
+	quickPick.onDidHide(() => { quickPick.dispose(); });
+	quickPick.show()
+}
+
+async function pasteSymbolAsSnippetUsingPopupAsInput(): Promise<void> {
 	let inputFunction = async function(): Promise<string> {
 		var editor = vscode.window.activeTextEditor;
 		if (!editor) {
@@ -138,7 +190,7 @@ async function pasteSymbolAsCommentUsingPopupAsInput(): Promise<void> {
 		}
 		return '';
 	}
-	SnippetComments.pasteSymbolAsComment(inputFunction);
+	SnippetComments.pasteSymbolAsCommentUsingInputFunction(inputFunction);
 }
 
 async function pasteSymbolAsCommentUsingCursorAsInput(): Promise<void> {
@@ -160,7 +212,7 @@ async function pasteSymbolAsCommentUsingCursorAsInput(): Promise<void> {
 		}
 		return '';
 	}
-	SnippetComments.pasteSymbolAsComment(inputFunction);
+	SnippetComments.pasteSymbolAsCommentUsingInputFunction(inputFunction);
 }
 
 async function rewriteRestOfFunction(): Promise<any> {
