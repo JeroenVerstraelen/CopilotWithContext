@@ -2,7 +2,7 @@
 Simple plugin that adds snippets and other tools for Github copilot to improve productivity.
 
 ## How does it work?
-![](https://i.imgur.com/76lF9h2.gif)
+![](https://i.imgur.com/GP94OfP.gif)
 1. Use <i>paste snippet</i> to quickly add any class, method, piece of code, ... as a special comment
 2. Prompt github copilot
 3. Use <i>remove snippets</i> to remove the comment you used as a reference
