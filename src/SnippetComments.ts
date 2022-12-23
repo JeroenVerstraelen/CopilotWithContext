@@ -27,7 +27,7 @@ export class SnippetComments {
 
 			// Move the cursor one line below the end of the snippet.
 			let endOfSnippetLine = editor.document.lineAt(cursorPosition.line + snippetAsComment.length);
-			let newCursorPosition =  new vscode.Position(endOfSnippetLine.lineNumber, endOfSnippetLine.range.end.character);
+			let newCursorPosition =  new vscode.Position(endOfSnippetLine.lineNumber, cursorPosition.character);
 			editor.selection = new vscode.Selection(newCursorPosition, newCursorPosition);
 			editor.revealRange(new vscode.Range(newCursorPosition, newCursorPosition));
 		}
