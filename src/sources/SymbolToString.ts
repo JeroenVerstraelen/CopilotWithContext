@@ -51,6 +51,13 @@ export class SymbolToString {
 		return document.lineAt(symbol.range.start.line).text
 	}
 
+	static async lineToString(symbol: WorkspaceSymbol): Promise<string> {
+		let uri = symbol.uri;
+		let document = await vscode.workspace.openTextDocument(uri);
+		let line = document.lineAt(symbol.range.start.line).text;
+		return line
+	}
+
 	static async workspaceSymbolToString(symbol: WorkspaceSymbol): Promise<string> {
 		let docSymbol: vscode.DocumentSymbol | undefined = await WorkspaceSymbols.getDocumentSymbol(symbol);
 		if (!docSymbol) { return "" }
@@ -62,9 +69,13 @@ export class SymbolToString {
 		let workspaceSymbol = WorkspaceSymbols.symbolInfoToWorkspaceSymbol(symbol);
 		switch (symbol.kind) {
 			case vscode.SymbolKind.Struct:
-				return await SymbolToString.symbolWithChildrenToString(workspaceSymbol, 0, 2);
+				return await SymbolToString.symbolWithChildrenToString(workspaceSymbol, 0, 0);
 			case vscode.SymbolKind.Class:
-				return await SymbolToString.symbolWithChildrenToString(workspaceSymbol, 0, 2);
+				return await SymbolToString.symbolWithChildrenToString(workspaceSymbol, 0, 0);
+			case vscode.SymbolKind.Field:
+				return await SymbolToString.lineToString(workspaceSymbol);
+			case vscode.SymbolKind.Variable:
+				return await SymbolToString.lineToString(workspaceSymbol);
 			default:
 				return await SymbolToString.workspaceSymbolToString(workspaceSymbol)
 		}

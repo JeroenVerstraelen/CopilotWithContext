@@ -12,31 +12,24 @@ export class SnippetComments {
 		let editor = vscode.window.activeTextEditor;
 		if (editor) {
 			let commentSymbol = Config.commentSymbol(editor.document.languageId);
-			// Insert the snippet one live above the cursor position.
 			let cursorPosition = editor.selection.active;
-			let insertPosition = new vscode.Position(cursorPosition.line, 0);
 			let whiteSpaceIndex = editor.document.lineAt(cursorPosition.line).firstNonWhitespaceCharacterIndex;
 			let indentation = editor.document.lineAt(cursorPosition.line).text.substring(0, whiteSpaceIndex);
-			var firstLettersOfSnippet = ''
-			// let firstWordOfSnippetMatch = snippet.match(/(?<=^[\s"']*)(\w+)/)
-			// if (firstWordOfSnippetMatch) {
-			// 	firstLettersOfSnippet = firstWordOfSnippetMatch[0].substring(0, 3);
-			// }
-			let taggedSelection = Config.snippetStartSymbol(editor.document.languageId) + '\n' + snippet + '\n' + Config.snippetEndSymbol(editor.document.languageId);
+
+			let snippetWithTags = Config.snippetStartSymbol(editor.document.languageId) + '\n' + snippet + '\n' + Config.snippetEndSymbol(editor.document.languageId);
+
 			// Add a comment to each line of the selection.
-			let commentedLines = taggedSelection.split('\n').map((line) => indentation + commentSymbol + line);
+			let snippetAsComment = snippetWithTags.split('\n').map((line) => indentation + commentSymbol + line);
+
+			// Insert the commented lines, one line above the original cursor position.
+			let cursorText = editor.document.lineAt(cursorPosition.line).text;
+			let insertPosition = new vscode.Position(cursorPosition.line, 0);
 			await editor.edit(editBuilder => {
-				editBuilder.insert(insertPosition, commentedLines.join('\n') + '\n' + indentation + firstLettersOfSnippet + '\n');
+				editBuilder.insert(insertPosition, snippetAsComment.join('\n') + '\n' + indentation + '\n');
 			})
 
-			if (Config.collapseSnippetComments(editor.document.languageId)) {
-				// Collapse the insertPosition.
-				editor.selection = new vscode.Selection(insertPosition.line, 0, insertPosition.line, 0);
-				await vscode.commands.executeCommand('editor.fold');
-			}
-			
 			// Move the cursor one line below the end of the snippet.
-			let endOfSnippetLine = editor.document.lineAt(cursorPosition.line + commentedLines.length);
+			let endOfSnippetLine = editor.document.lineAt(cursorPosition.line + snippetAsComment.length);
 			let newCursorPosition =  new vscode.Position(endOfSnippetLine.lineNumber, endOfSnippetLine.range.end.character);
 			editor.selection = new vscode.Selection(newCursorPosition, newCursorPosition);
 			editor.revealRange(new vscode.Range(newCursorPosition, newCursorPosition));
@@ -46,114 +39,6 @@ export class SnippetComments {
 	static async pasteSymbolAsComment(symbol: vscode.SymbolInformation): Promise<void> {
 		let snippet = await SymbolToString.anyToString(symbol);
 		SnippetComments.pasteSnippetAsComment(snippet);
-	}
-
-	static async pasteSymbolAsCommentUsingInputFunction(inputFunction: () => Promise<string>): Promise<void> {
-		// Ask user if we should search for structs, function, classes or everything.
-		let options: QuickPickOptions = {
-			matchOnDescription: true,
-			matchOnDetail: true,
-			placeHolder: 'Select the type of the symbol to search for.'
-		};
-		let userSymbolKindSelection = await vscode.window.showQuickPick([
-			'struct',
-			'struct with field definitions',
-			'struct with field definitions 2x',
-			'function',
-			'function signature',
-			'class',
-			'any'
-		], options);
-		var snippet = '';
-
-		let structOption = async (inputText: string, maxReferenceDepth: number) => {
-			let structs = await WorkspaceSymbols.getStructs(inputText);
-			let structNames = structs.map((struct) => struct.name);
-			// Make the user select a struct.
-			let selectedStructName = await vscode.window.showQuickPick(structNames);
-			if (selectedStructName) {
-				let selectedStruct = structs.find((struct) => struct.name === selectedStructName);
-				if (selectedStruct) {
-					snippet = await SymbolToString.symbolWithChildrenToString(
-						new WorkspaceSymbol(selectedStruct.name, selectedStruct.location.uri, selectedStruct.location.range),
-						maxReferenceDepth
-					)
-				}
-			}
-		}
-
-		if (userSymbolKindSelection) {
-			let inputText = await inputFunction();
-			// Switch over the selection and search for the selected text. 
-			switch (userSymbolKindSelection) {
-				case '':
-					return;
-				case 'struct':
-					await structOption(inputText, 0);
-					break;
-				case 'struct with field definitions':
-					await structOption(inputText, 1);
-					break;
-				case 'struct with field definitions 2x':
-					await structOption(inputText, 2);
-					break;
-				case 'function signature':
-				case 'function':
-					let functions = await WorkspaceSymbols.getFunctions(inputText);
-					let methods: WorkspaceSymbol[] = await WorkspaceSymbols.getMethods(inputText);
-					var functionNames = functions.map((functionSymbol) => functionSymbol.name);
-					functionNames.push(...methods.map((methodSymbol) => methodSymbol.name));
-					// Make the user select a function.
-					let selectedFunctionName = await vscode.window.showQuickPick(functionNames);
-					if (selectedFunctionName) {
-						let editor = vscode.window.activeTextEditor;
-						if (!editor) { return; }
-
-						let selectedFunction = functions.find((functionSymbol) => functionSymbol.name === selectedFunctionName)
-						let selectedSymbol = null;
-						if (selectedFunction) {
-							selectedSymbol = await WorkspaceSymbols.symbolInfoToWorkspaceSymbol(selectedFunction);
-						} else {
-							selectedSymbol = methods.find((methodSymbol) => methodSymbol.name === selectedFunctionName);
-						}
-
-						if (selectedSymbol) {
-							if (userSymbolKindSelection === 'function signature') {
-								snippet = await SymbolToString.functionSignatureToString(selectedSymbol)
-								break;
-							}
-							snippet = await SymbolToString.workspaceSymbolToString(selectedSymbol)
-							break;
-						}
-					}
-					break;
-				case 'class':
-					let classes = await WorkspaceSymbols.getClasses(inputText);
-					let classNames = classes.map((classSymbol) => classSymbol.name);
-					// Make the user select a class.
-					let selectedClassName = await vscode.window.showQuickPick(classNames);
-					if (selectedClassName) {
-						let selectedClass = classes.find((classSymbol) => classSymbol.name === selectedClassName);
-						if (selectedClass) {
-							snippet = await SymbolToString.symbolWithChildrenToString(await WorkspaceSymbols.symbolInfoToWorkspaceSymbol(selectedClass), 0, 0);
-						}
-					}
-					break;
-				case 'any':
-					let symbols = await WorkspaceSymbols.getAny(inputText);
-					let symbolNames = symbols.map((symbol) => symbol.name);
-					// Make the user select a symbol.
-					let selectedSymbolName = await vscode.window.showQuickPick(symbolNames);
-					if (selectedSymbolName) {
-						let selectedSymbol = symbols.find((symbol) => symbol.name === selectedSymbolName);
-						if (selectedSymbol) {
-							snippet = '// ' + selectedSymbol.name + '\n';
-						}
-					}
-					break;
-			}
-			SnippetComments.pasteSnippetAsComment(snippet);
-		}
 	}
 
 	static async removeFromFile(): Promise<void> {
@@ -171,7 +56,7 @@ export class SnippetComments {
 			newline = '\n';
 		}
 		let whitespace = '\\s*';
-		let regex = new RegExp(newline + '?' + whitespace + commentSymbol + snippetStartSymbol + '([\\s\\S]*?)' + snippetEndSymbol + '([\\s\\S]*?)', 'g');
+		let regex = new RegExp(whitespace + commentSymbol + "\\s*" + snippetStartSymbol + '([\\s\\S]*?)' + "\\s*" + snippetEndSymbol + '([\\s\\S]*?)', 'g');
 
 		// Calculate new cursor position. Ensure that it doesn't move when we replace the document text.
 		let originalSelection = editor.selection;

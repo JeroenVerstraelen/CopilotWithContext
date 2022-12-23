@@ -4,27 +4,24 @@ import G = require('glob');
 import * as vscode from 'vscode';
 import { SnippetComments } from './SnippetComments';
 import { SnippetFile } from './sources/SnippetFile';
+import { Stackoverflow } from './sources/stackoverflow';
 import { WorkspaceSymbols } from './sources/WorkspaceSymbols';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	// Snippet file commands.
+	// Snippet commands.
 	let addSnippetDisposable = vscode.commands.registerCommand('copilot-with-context.addSelectedTextAsSnippet', () => addSelectedTextToSnippetFile());
-	let pasteSnippetDisposable = vscode.commands.registerCommand('copilot-with-context.pasteSnippet', () => pasteAnyAsSnippetUsingPopupAsInput());
-	
-	// Symbol commands.
-	let pasteSymbolDisposable = vscode.commands.registerCommand('copilot-with-context.pasteSymbolAsSnippet', () => pasteSymbolAsSnippetUsingPopupAsInput());
-	let rewriteRestOfFunctionDisposable = vscode.commands.registerCommand('copilot-with-context.rewriteRestOfFunction', () => rewriteRestOfFunction());
-
-	// Snippet removal commands.
+	let pasteSnippetDisposable = vscode.commands.registerCommand('copilot-with-context.pasteSnippet', () => pasteSnippetUsingSelectionAsInput());
 	let removeSnippetsDisposable = vscode.commands.registerCommand('copilot-with-context.removeSnippetsFromFile', () => SnippetComments.removeFromFile());
-
+	
+	// Utility commands.
+	let rewriteRestOfFunctionDisposable = vscode.commands.registerCommand('copilot-with-context.rewriteRestOfFunction', () => rewriteRestOfFunction());
+	
 	context.subscriptions.push(addSnippetDisposable);
-	context.subscriptions.push(pasteSnippetDisposable);
-	context.subscriptions.push(pasteSymbolDisposable);
-	context.subscriptions.push(rewriteRestOfFunctionDisposable);
 	context.subscriptions.push(removeSnippetsDisposable);
+	context.subscriptions.push(pasteSnippetDisposable);
+	context.subscriptions.push(rewriteRestOfFunctionDisposable);
 }
 
 // this method is called when your extension is deactivated
@@ -48,88 +45,37 @@ async function addSelectedTextToSnippetFile(): Promise<void> {
 	vscode.window.showInformationMessage('Added selected text to ' + SnippetFile.fileName);
 }
 
-async function selectSnippetAndPasteItUsingPopupAsInput() {
-	var snippets: any[] = SnippetFile.getSnippets();
-	var snippetTitles = snippets.map(snippet => snippet.title);
-	// Do a fuzzy search on the content of the snippets.
-	let options: vscode.QuickPickOptions = {
-		matchOnDescription: true,
-		matchOnDetail: true,
-		placeHolder: 'Select a snippet to add as a comment'
-	};
-	let selection = await vscode.window.showQuickPick(snippetTitles, options);
-	if (selection) {
-		let snippet = snippets.find(snippet => snippet.title === selection).snippet;
-		SnippetComments.pasteSnippetAsComment(snippet);
-		// await vscode.commands.executeCommand('github.copilot.generate');
-	}
-}
-
-async function selectSnippetAndPasteItUsingCursorAsInput() {
+async function pasteSnippetUsingCursorAsInput() {
 	var editor = vscode.window.activeTextEditor;
 	if (!editor) { return; }
 	let cursorPosition = editor.selection.active;
 	let line = editor.document.lineAt(cursorPosition.line);
 	// Take current word as input. 
-	// e.g. 'Geotrellis.addLayer([cursor])' => 'addLayer'.
+	// e.g. 'Geotrellis.addLayer([cursor]' => 'addLayer'.
 	let inputText = line.text.substring(0, cursorPosition.character);
 	let regex = /\w+$/;
 	let match = inputText.match(regex);
-	if (match) {
-		inputText = match[0].toString();
-		let snippets: any[] = SnippetFile.getSnippets();
-		let quickPickItems = snippets.map(snippet => <vscode.QuickPickItem>{ label: snippet.title, description: snippet.snippet });
-		quickPickItems = quickPickItems.concat(<vscode.QuickPickItem>{ label: 'Search for usages of input', alwaysShow: true });
-		quickPickItems = quickPickItems.concat(<vscode.QuickPickItem>{ label: 'Search for symbols', alwaysShow: true });
-
-		// Do a fuzzy search on the content of the snippets.
-		let quickPick: vscode.QuickPick<vscode.QuickPickItem> = await vscode.window.createQuickPick<vscode.QuickPickItem>()
-		quickPick.value = inputText;
-		quickPick.items = quickPickItems;
-		quickPick.matchOnDescription = true;
-		quickPick.matchOnDetail = true;
-		quickPick.placeholder = 'Select a snippet to add as a comment'
-		quickPick.onDidAccept(async () => {
-			let selection = quickPick.selectedItems[0].label;
-			if (selection === 'Search for usages of input') {
-				vscode.window.showInformationMessage('Search for usages of input not yet implemented');
-			}
-			else if (selection === 'Search for symbols') {
-				pasteSymbolAsSnippetUsingPopupAsInput();	
-				quickPick.dispose();
-				return;
-			}
-			else {
-				let snippet = snippets.find(snippet => snippet.title === selection).snippet;
-				SnippetComments.pasteSnippetAsComment(snippet);
-				// await vscode.commands.executeCommand('github.copilot.generate');
-			}
-			quickPick.dispose();
-		});
-
-		quickPick.onDidHide(() => { quickPick.dispose(); });
-		quickPick.show()
-		return;
-	}
-	await selectSnippetAndPasteItUsingPopupAsInput();
+	var popupInput = match ? match[0] : '';
+	await pasteSnippetUsingPopupAsInput(popupInput);
 }
 
-function pasteSymbolAsCommentUsingSelectedTextAsInput(): void {
-	let inputFunction = async function (): Promise<string> {
-		let editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			return '';
-		}
-		return editor.document.getText(editor.selection);
+async function pasteSnippetUsingSelectionAsInput() {
+	var editor = vscode.window.activeTextEditor;
+	if (!editor) { return; }
+	let selection = editor.document.getText(editor.selection);
+	if (selection.length == 0) {
+		// If there is no selection, fall back to cursor.
+		pasteSnippetUsingCursorAsInput();
+		return;
 	}
-	SnippetComments.pasteSymbolAsCommentUsingInputFunction(inputFunction);
+	await pasteSnippetUsingPopupAsInput(selection);
 }
 
 // Selects a snippet or a symbol and pastes it as a comment.
-async function pasteAnyAsSnippetUsingPopupAsInput() {
+async function pasteSnippetUsingPopupAsInput(initialInput: string = ''): Promise<void> {
 	// Create a popup that automatically updates the input box while the user is typing.
 	let quickPick: vscode.QuickPick<vscode.QuickPickItem> = await vscode.window.createQuickPick<vscode.QuickPickItem>()
-	quickPick.value = '';
+	quickPick.value = initialInput;
 	quickPick.matchOnDescription = true;
 	quickPick.matchOnDetail = true;
 	quickPick.placeholder = 'Select a snippet to add as a comment'
@@ -138,15 +84,17 @@ async function pasteAnyAsSnippetUsingPopupAsInput() {
 	let snippets: any[] = SnippetFile.getSnippets();
 	let snippetQuickpickItems = snippets.map(snippet => <vscode.QuickPickItem>{ label: snippet.title, description: "Snippet" });
 	var symbols: vscode.SymbolInformation[] = []
+
+	snippetQuickpickItems.push(<vscode.QuickPickItem>{ label: 'Search on stackoverflow', alwaysShow: true });
 	
 	quickPick.onDidChangeValue(async (value) => {
 		if (value.length > 0) {
 			quickPick.busy = true;
 			// Filter sources and combine.
-			let filteredSnippets = snippetQuickpickItems.filter(snippet => snippet.label.includes(value));
+			// let filteredSnippets = snippetQuickpickItems.filter(snippet => snippet.label.includes(value));
 			symbols = await WorkspaceSymbols.getAny(value)
 			let symbolQuickpickItems = symbols.map(symbol => <vscode.QuickPickItem>{ label: symbol.name, description: "Symbol: " + symbol.kind.toString() });
-			let quickpickItems = filteredSnippets.concat(symbolQuickpickItems);
+			let quickpickItems = snippetQuickpickItems.concat(symbolQuickpickItems);
 			
 			// Show filtered sources.
 			quickPick.items = quickpickItems;
@@ -165,6 +113,13 @@ async function pasteAnyAsSnippetUsingPopupAsInput() {
 				return;
 			}
 			SnippetComments.pasteSymbolAsComment(symbol);
+		} else if (label === 'Search on stackoverflow') {
+			let snippet = await Stackoverflow.search(quickPick.value);
+			if (!snippet) {
+				vscode.window.showErrorMessage('Nothing found on stackoverflow!');
+				return;
+			}
+			SnippetComments.pasteSnippetAsComment(snippet);
 		} else {
 			let snippet = snippets.find(snippet => snippet.title === selection).snippet;
 			SnippetComments.pasteSnippetAsComment(snippet);
@@ -174,45 +129,6 @@ async function pasteAnyAsSnippetUsingPopupAsInput() {
 
 	quickPick.onDidHide(() => { quickPick.dispose(); });
 	quickPick.show()
-}
-
-async function pasteSymbolAsSnippetUsingPopupAsInput(): Promise<void> {
-	let inputFunction = async function(): Promise<string> {
-		var editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			return '';
-		}
-		let input = await vscode.window.showInputBox({
-			prompt: 'Enter (partial) name of the symbol to search for.'
-		})
-		if (input) {
-			return input;
-		}
-		return '';
-	}
-	SnippetComments.pasteSymbolAsCommentUsingInputFunction(inputFunction);
-}
-
-async function pasteSymbolAsCommentUsingCursorAsInput(): Promise<void> {
-	let inputFunction = async function (): Promise<string> {
-		let editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			return '';
-		}
-		let cursorPosition = editor.selection.active;
-		let line = editor.document.lineAt(cursorPosition.line);
-		// Take current word as input.
-		// e.g. 'Geotrellis.addLayer([cursor])' => 'addLayer'.
-		let inputText = line.text.substring(0, cursorPosition.character);
-		let regex = /\w+$/;
-		let match = inputText.match(regex);
-		if (match) {
-			inputText = match[0];
-			return inputText;
-		}
-		return '';
-	}
-	SnippetComments.pasteSymbolAsCommentUsingInputFunction(inputFunction);
 }
 
 async function rewriteRestOfFunction(): Promise<any> {

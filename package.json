@@ -1,9 +1,9 @@
 {
-	"name": "copilot-with-context",
-	"displayName": "Copilot with context",
+	"name": "github-copilot-with-context",
+	"displayName": "Github Copilot with context",
 	"publisher": "JeroenV",
 	"description": "",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/JeroenVerstraelen/CopilotWithContext"
@@ -15,10 +15,10 @@
 		"Other"
 	],
 	"activationEvents": [
+		"*",
 		"onCommand:copilot-with-context.addSelectedTextAsSnippet",
 		"onCommand:copilot-with-context.pasteSnippet",
 		"onCommand:copilot-with-context.removeSnippetsFromFile",
-		"onCommand:copilot-with-context.pasteSymbolAsSnippet",
 		"onCommand:copilot-with-context.rewriteRestOfFunction"
 	],
 	"main": "./out/extension.js",
@@ -37,114 +37,122 @@
 				"title": "Copilot: Remove all snippets from the current file"
 			},
 			{
-				"command": "copilot-with-context.pasteSymbolAsSnippet",
-				"title": "Copilot: paste a symbol from your workspace as a snippet"
-			},
-			{
 				"command": "copilot-with-context.rewriteRestOfFunction",
 				"title": "Copilot: Rewrite the rest of the function below your cursor"
 			}
 		],
+		"keybindings": [
+            {
+                "command": "copilot-with-context.searchAny",
+                "key": "alt+e",
+                "mac": "alt+e"
+            },
+			{
+				"command": "copilot-with-context.acceptFirst",
+				"key": "ctrl+1",
+				"mac": "cmd+1"
+			}
+        ],
 		"configuration": {
 			"title": "Copilot With Context",
 			"properties": {
-			  "copilotcontext.commentSymbol": {
-				"type": "string",
-				"default": "//",
-				"description": "The symbol used to paste snippets as comments.",
-				"scope": "language-overridable"
-			  },
-			  "copilotcontext.snippetStartSymbol": {
-				"type": "string",
-				"default": "<snippet>",
-				"description": "The start symbol for a snippet.",
-				"scope": "language-overridable"
-			  },
-			  "copilotcontext.snippetEndSymbol": {
-				"type": "string",
-				"default": "</snippet>",
-				"description": "The end symbol for a snippet.",
-				"scope": "language-overridable"
-			  },
-			  "copilotcontext.snippetFileName": {
-				"type": "string",
-				"default": "copilot_snippets.json",
-				"description": "The name of the snippet file."
-			  },
-			  "copilotcontext.languageFileExtension": {
-				"type": "string",
-				"default": ".py",
-				"description": "The file extension to look for symbols. You should not change this unless no symbols are showing in your search bar.",
-				"scope": "language-overridable"
-			  },
-			  "copilotcontext.collapseSnippetComments": {
-				"type": "boolean",
-				"default": true,
-				"description": "Collapse snippet comments.",
-				"scope": "language-overridable"
-			  }
+				"copilotcontext.commentSymbol": {
+					"type": "string",
+					"default": "//",
+					"description": "The symbol used to paste snippets as comments.",
+					"scope": "language-overridable"
+				},
+				"copilotcontext.snippetStartSymbol": {
+					"type": "string",
+					"default": "<snippet>",
+					"description": "The start symbol for a snippet.",
+					"scope": "language-overridable"
+				},
+				"copilotcontext.snippetEndSymbol": {
+					"type": "string",
+					"default": "</snippet>",
+					"description": "The end symbol for a snippet.",
+					"scope": "language-overridable"
+				},
+				"copilotcontext.snippetFileName": {
+					"type": "string",
+					"default": "copilot_snippets.json",
+					"description": "The name of the snippet file."
+				},
+				"copilotcontext.languageFileExtension": {
+					"type": "string",
+					"default": ".py",
+					"description": "The file extension to look for symbols. You should not change this unless no symbols are showing in your search bar.",
+					"scope": "language-overridable"
+				},
+				"copilotcontext.collapseSnippetComments": {
+					"type": "boolean",
+					"default": false,
+					"description": "Collapse snippet comments.",
+					"scope": "language-overridable"
+				}
 			}
 		},
 		"configurationDefaults": {
 			"[python]": {
-			  "copilotcontext.commentSymbol": "#",
-			  "copilotcontext.languageFileExtension": ".py"
+				"copilotcontext.commentSymbol": "#",
+				"copilotcontext.languageFileExtension": ".py"
 			},
 			"[javascript]": {
-			  "copilotcontext.commentSymbol": "//",
-			  "copilotcontext.languageFileExtension": ".js"
+				"copilotcontext.commentSymbol": "//",
+				"copilotcontext.languageFileExtension": ".js"
 			},
 			"[go]": {
-			  "copilotcontext.commentSymbol": "//",
-			  "copilotcontext.languageFileExtension": ".go"
+				"copilotcontext.commentSymbol": "//",
+				"copilotcontext.languageFileExtension": ".go"
 			},
 			"[csharp]": {
-			  "copilotcontext.commentSymbol": "//",
-			  "copilotcontext.languageFileExtension": ".cs"
+				"copilotcontext.commentSymbol": "//",
+				"copilotcontext.languageFileExtension": ".cs"
 			},
 			"[c]": {
-			  "copilotcontext.commentSymbol": "//",
-			  "copilotcontext.languageFileExtension": ".c"
+				"copilotcontext.commentSymbol": "//",
+				"copilotcontext.languageFileExtension": ".c"
 			},
 			"[cpp]": {
-			  "copilotcontext.commentSymbol": "//",
-			  "copilotcontext.languageFileExtension": ".cpp"
+				"copilotcontext.commentSymbol": "//",
+				"copilotcontext.languageFileExtension": ".cpp"
 			},
 			"[java]": {
-			  "copilotcontext.commentSymbol": "//",
-			  "copilotcontext.languageFileExtension": ".java"
+				"copilotcontext.commentSymbol": "//",
+				"copilotcontext.languageFileExtension": ".java"
 			},
 			"[kotlin]": {
-			  "copilotcontext.commentSymbol": "//",
-			  "copilotcontext.languageFileExtension": ".kt"
+				"copilotcontext.commentSymbol": "//",
+				"copilotcontext.languageFileExtension": ".kt"
 			},
 			"[swift]": {
-			  "copilotcontext.commentSymbol": "//",
-			  "copilotcontext.languageFileExtension": ".swift"
+				"copilotcontext.commentSymbol": "//",
+				"copilotcontext.languageFileExtension": ".swift"
 			},
 			"[php]": {
-			  "copilotcontext.commentSymbol": "//",
-			  "copilotcontext.languageFileExtension": ".php"
+				"copilotcontext.commentSymbol": "//",
+				"copilotcontext.languageFileExtension": ".php"
 			},
 			"[ruby]": {
-			  "copilotcontext.commentSymbol": "#",
-			  "copilotcontext.languageFileExtension": ".rb"
+				"copilotcontext.commentSymbol": "#",
+				"copilotcontext.languageFileExtension": ".rb"
 			},
 			"[rust]": {
-			  "copilotcontext.commentSymbol": "//",
-			  "copilotcontext.languageFileExtension": ".rs"
+				"copilotcontext.commentSymbol": "//",
+				"copilotcontext.languageFileExtension": ".rs"
 			},
 			"[scala]": {
-			  "copilotcontext.commentSymbol": "//",
-			  "copilotcontext.languageFileExtension": ".scala"
+				"copilotcontext.commentSymbol": "//",
+				"copilotcontext.languageFileExtension": ".scala"
 			},
 			"[typescript]": {
-			  "copilotcontext.commentSymbol": "//",
-			  "copilotcontext.languageFileExtension": ".ts"
+				"copilotcontext.commentSymbol": "//",
+				"copilotcontext.languageFileExtension": ".ts"
 			},
 			"[visualbasic]": {
-			  "copilotcontext.commentSymbol": "'",
-			  "copilotcontext.languageFileExtension": ".vb"
+				"copilotcontext.commentSymbol": "'",
+				"copilotcontext.languageFileExtension": ".vb"
 			}
 		}
 	},
@@ -164,6 +172,7 @@
 		"@types/glob": "^7.2.0",
 		"@types/mocha": "^9.1.1",
 		"@types/node": "16.x",
+		"@types/request-promise-native": "^1.0.18",
 		"@types/vscode": "^1.68.0",
 		"@typescript-eslint/eslint-plugin": "^5.27.0",
 		"@typescript-eslint/parser": "^5.27.0",
@@ -173,5 +182,17 @@
 		"glob": "^8.0.3",
 		"mocha": "^10.0.0",
 		"typescript": "^4.7.2"
+	},
+	"dependencies": {
+		"@apollo/client": "^3.6.9",
+		"cross-fetch": "^3.1.5",
+		"request": "^2.88.2",
+		"request-promise-native": "^1.0.9"
+	},
+	"__metadata": {
+		"id": "bd575e71-1803-4e1c-9575-2aea48bbced3",
+		"publisherDisplayName": "JeroenV",
+		"publisherId": "e374014f-a4b2-43f4-873b-692b8370ec8d",
+		"isPreReleaseVersion": false
 	}
 }
