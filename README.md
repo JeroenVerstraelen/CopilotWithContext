@@ -1,31 +1,36 @@
 # Copilot with Context
 Simple plugin that adds snippets and other tools for Github copilot to improve productivity.
 
+## How does it work?
+![](https://i.imgur.com/O0NY0Vc.gif)
+1. Use <i>paste snippet</i> to quickly add any class, method, piece of code, ... as a special comment
+2. Prompt github copilot
+3. Use <i>remove snippets</i> to remove the comment you used as a reference
+
 ## Benefits
 * Ensure Copilot knows how to call any API with the correct parameters
 * Ensure Copilot knows the parameters for any function in your code
 * Save any of your Copilot prompts as a snippet for easy access
+    * Find other prompts on the github discussions page!
 * Quickly reformat code without fumbling around with prompts
 * Generally make working with Copilot easier
   
 ## Commands
+
+### Paste snippet
+Search for any snippet, class, method, function, ... in your workspace and quickly paste it above your cursor.
+
+### Remove snippets
+Remove any comment between \<snippet\>\</snippet\> from the current file.
+
+### Add snippet
+Select a section of code and add it as snippet for later.
+
 ### Rewrite function
 Quickly reformat a function.
 
 Example: Both parameters are switched for all assertions in only a few seconds. 
 ![](https://i.imgur.com/4xrWIMC.gif)
-
-### Add snippet
-Select a section of code and add it as snippet for later.
-
-### Paste snippet
-Search for a snippet and quickly paste it above your cursor.
-
-### Remove snippets
-Remove any comment between \<snippet\>\</snippet\> from the current file.
-
-### Paste a symbol
-Search for a function, class, struct in your project and quickly paste its definition as a snippet above your cursor.
 
 ## What are snippets
 Snippets are simple comments in any language surrounded by \<snippet\> tags. They provide Copilot with the necessary context to call functions, etc. with the correct parameters.
