@@ -122,8 +122,12 @@ async function pasteSnippetUsingPopupAsInput(initialInput: string = ''): Promise
 			}
 			SnippetComments.pasteSnippetAsComment(snippet);
 		} else {
-			let snippet = snippets.find(snippet => snippet.title === selection).snippet;
-			SnippetComments.pasteSnippetAsComment(snippet);
+			let snippet = snippets.find(snippet => snippet.title === label)
+			if (!snippet) {
+				vscode.window.showErrorMessage('Snippet not found');
+				return;
+			}
+			SnippetComments.pasteSnippetAsComment(snippet.snippet);
 		}
 		quickPick.dispose();
 	});

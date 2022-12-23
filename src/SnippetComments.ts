@@ -1,6 +1,4 @@
 import * as vscode from 'vscode';
-import { QuickPickOptions } from 'vscode';
-import { WorkspaceSymbol, WorkspaceSymbols } from './sources/WorkspaceSymbols';
 import { Config } from "./utils/Config";
 import { SymbolToString } from './sources/SymbolToString';
 
@@ -22,10 +20,9 @@ export class SnippetComments {
 			let snippetAsComment = snippetWithTags.split('\n').map((line) => indentation + commentSymbol + line);
 
 			// Insert the commented lines, one line above the original cursor position.
-			let cursorText = editor.document.lineAt(cursorPosition.line).text;
 			let insertPosition = new vscode.Position(cursorPosition.line, 0);
 			await editor.edit(editBuilder => {
-				editBuilder.insert(insertPosition, snippetAsComment.join('\n') + '\n' + indentation + '\n');
+				editBuilder.insert(insertPosition, snippetAsComment.join('\n') + '\n' + indentation);
 			})
 
 			// Move the cursor one line below the end of the snippet.
