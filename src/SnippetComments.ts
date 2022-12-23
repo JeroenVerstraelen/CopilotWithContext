@@ -22,7 +22,7 @@ export class SnippetComments {
 			// Insert the commented lines, one line above the original cursor position.
 			let insertPosition = new vscode.Position(cursorPosition.line, 0);
 			await editor.edit(editBuilder => {
-				editBuilder.insert(insertPosition, snippetAsComment.join('\n') + '\n' + indentation);
+				editBuilder.insert(insertPosition, snippetAsComment.join('\n') + '\n');
 			})
 
 			// Move the cursor one line below the end of the snippet.
