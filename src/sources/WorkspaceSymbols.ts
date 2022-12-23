@@ -2,10 +2,6 @@ import * as vscode from 'vscode';
 import { commands } from 'vscode';
 import { Config } from "../utils/Config";
 
-// <snippet>
-// 
-// </snippet>
-
 export class WorkspaceSymbol {
 	constructor(public name: string, public uri: vscode.Uri, public range: vscode.Range) { }
 }
