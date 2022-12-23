@@ -1,5 +1,6 @@
 {
 	"name": "github-copilot-with-context",
+	"icon": "images/icon.png",
 	"displayName": "Github Copilot with context",
 	"publisher": "JeroenV",
 	"description": "",
@@ -41,18 +42,6 @@
 				"title": "Copilot: Rewrite the rest of the function below your cursor"
 			}
 		],
-		"keybindings": [
-            {
-                "command": "copilot-with-context.searchAny",
-                "key": "alt+e",
-                "mac": "alt+e"
-            },
-			{
-				"command": "copilot-with-context.acceptFirst",
-				"key": "ctrl+1",
-				"mac": "cmd+1"
-			}
-        ],
 		"configuration": {
 			"title": "Copilot With Context",
 			"properties": {
