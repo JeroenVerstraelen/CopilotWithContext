@@ -50,13 +50,12 @@ async function pasteSnippetUsingCursorAsInput() {
 	var editor = vscode.window.activeTextEditor;
 	if (!editor) { return; }
 	let cursorPosition = editor.selection.active;
-	let line = editor.document.lineAt(cursorPosition.line);
-	// Take current word as input. 
+	let range = new vscode.Range(0, 0, cursorPosition.line, cursorPosition.character);
+	let inputText = editor.document.getText(range);
+	// Look for the first word before the cursor.
 	// e.g. 'Geotrellis.addLayer([cursor]' => 'addLayer'.
-	let inputText = line.text.substring(0, cursorPosition.character);
-	let regex = /\w+$/;
-	let match = inputText.match(regex);
-	var popupInput = match ? match[0] : '';
+	let match = inputText.match(/(\w+)/g);
+	let popupInput = match ? match[match.length - 1] : '';
 	await pasteSnippetUsingPopupAsInput(popupInput);
 }
 
