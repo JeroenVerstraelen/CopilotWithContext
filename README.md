@@ -1,5 +1,5 @@
 # Copilot with Context
-<img src="https://i.imgur.com/3zp27PY.png" width="200" height="200" style="float: right;" />
+<img src="https://i.imgur.com/AgmJg8C.png" width="200" height="200" style="border-radius: 50%;" />
 
 ---
 
