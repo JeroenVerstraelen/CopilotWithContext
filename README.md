@@ -1,5 +1,8 @@
 # Copilot with Context
 <img src="https://i.imgur.com/3zp27PY.png" width="200" height="200" style="float: right;" />
+
+---
+
 Simple plugin that adds snippets and other tools for Github copilot to improve productivity.
 
 
