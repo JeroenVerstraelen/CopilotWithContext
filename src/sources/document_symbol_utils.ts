@@ -4,15 +4,40 @@ import { Config } from "../utils/Config";
 
 export class DocumentSymbolUtils {
 
+	
+	static findSymbolInChildren(symbol: vscode.DocumentSymbol, inputSymbol: vscode.SymbolInformation): vscode.DocumentSymbol | undefined {
+		let documentSymbol: vscode.DocumentSymbol | undefined = symbol.children.find(s => s.range.start.line === inputSymbol.location.range.start.line);
+		if (documentSymbol !== undefined) {
+			return documentSymbol;
+		}
+		// Else, try to find the symbol in the children.
+		for (let childSymbol of symbol.children) {
+			documentSymbol = DocumentSymbolUtils.findSymbolInChildren(childSymbol, inputSymbol);
+			if (documentSymbol !== undefined) {
+				return documentSymbol;
+			}
+		}
+		return undefined;
+	}
+    
 	static async getDocumentSymbol(inputSymbol: vscode.SymbolInformation): Promise<vscode.DocumentSymbol | undefined> {
 		// Assume executeDocumentSymbolProvider only returns DocumentSymbols.
 		let documentSymbols: vscode.DocumentSymbol[] = await vscode.commands.executeCommand('vscode.executeDocumentSymbolProvider', inputSymbol.location.uri);
 		if (documentSymbols !== undefined) {
 			let documentSymbol: vscode.DocumentSymbol | undefined = documentSymbols.find(s => s.range.start.line === inputSymbol.location.range.start.line);
-			return documentSymbol;
+			if (documentSymbol !== undefined) {
+				return documentSymbol;
+			}
+			// Else, try to find the symbol in the children.
+			for (let symbol of documentSymbols) {
+				documentSymbol = DocumentSymbolUtils.findSymbolInChildren(symbol, inputSymbol);
+				if (documentSymbol !== undefined) {
+					return documentSymbol;
+				}
+			}
 		}
-    }
-    
+	}
+
 	// Finds the definition documentsymbol of a variable or field.
 	// Returns a tuple of DocumentSymbol, and the uri of the document it was found in or undefined if it was not found.
 	static async getDefinition(field: vscode.DocumentSymbol, uri: vscode.Uri): Promise<[vscode.DocumentSymbol, vscode.Uri] | undefined> {

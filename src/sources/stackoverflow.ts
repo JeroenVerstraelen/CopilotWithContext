@@ -56,12 +56,13 @@ export class Stackoverflow {
             });  
         }
 
+        // Note: This is not a secret key, it is just used to identify the application. 
+        // There is a request quota so when in the future users will have to register their own key.
         const stackoverflowApiKey = 'O6c9kXQmlELyo)2Y1Fan9g((';
         const encodedTagsString = encodeURIComponent(tags.join(';'));
         const encodedAPISearchTerm = encodeURIComponent(updatedSearchTerm);
         const encodeWeb = encodeURIComponent(searchTerm);
         const filter = encodeURIComponent('!6VClS.317RM6C(_Ig3IlHwys1');
-        // const apiSearchUrl = `https://api.stackexchange.com/2.2/search?order=desc&sort=relevance&intitle=${encodedAPISearchTerm}&tagged=${encodedTagsString}&site=stackoverflow&key=${stackoverflowApiKey}`;
         const apiSearchUrl = `https://api.stackexchange.com/2.3/search/advanced?page=1&pagesize=10&order=desc&sort=relevance&accepted=True&closed=False&q=${encodedAPISearchTerm}&tagged=${encodedTagsString}&site=stackoverflow&key=${stackoverflowApiKey}&filter=${filter}`;
 
         const stackoverflowSearchUrl = `https://stackoverflow.com/search?q=${encodeWeb}`;
