@@ -6,6 +6,7 @@ import { SnippetComments } from './SnippetComments';
 import { SnippetFile } from './sources/SnippetFile';
 import { Stackoverflow } from './sources/stackoverflow';
 import { SymbolInformationUtils } from './sources/SymbolInformationUtils';
+import { SymbolToString } from './sources/SymbolToString';
 import { symbolKindToString, stringToSymbolKind } from './utils/StringUtils';
 
 // this method is called when your extension is activated
@@ -14,7 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// Snippet commands.
 	let addSnippetDisposable = vscode.commands.registerCommand('copilot-with-context.addSelectedTextAsSnippet', () => addSelectedTextToSnippetFile());
 	let pasteSnippetDisposable = vscode.commands.registerCommand('copilot-with-context.pasteSnippet', () => pasteSnippetUsingSelectionAsInput());
-	let removeSnippetsDisposable = vscode.commands.registerCommand('copilot-with-context.removeSnippetsFromFile', () => SnippetComments.removeFromFile());
+	let removeSnippetsDisposable = vscode.commands.registerCommand('copilot-with-context.removeSnippetsFromFile', () => SnippetComments.remove());
 	
 	// Utility commands.
 	let rewriteRestOfFunctionDisposable = vscode.commands.registerCommand('copilot-with-context.rewriteRestOfFunction', () => rewriteRestOfFunction());
@@ -112,21 +113,22 @@ async function pasteSnippetUsingPopupAsInput(initialInput: string = ''): Promise
 				vscode.window.showErrorMessage('Symbol not found');
 				return;
 			}
-			SnippetComments.pasteSymbolAsComment(symbol);
+			let snippet = await SymbolToString.anyToString(symbol);
+			SnippetComments.paste(snippet);
 		} else if (label === 'Search on stackoverflow') {
 			let snippet = await Stackoverflow.search(quickPick.value);
 			if (!snippet) {
 				vscode.window.showErrorMessage('Nothing found on stackoverflow!');
 				return;
 			}
-			SnippetComments.pasteSnippetAsComment(snippet);
+			SnippetComments.paste(snippet);
 		} else {
 			let snippet = snippets.find(snippet => snippet.title === label)
 			if (!snippet) {
 				vscode.window.showErrorMessage('Snippet not found');
 				return;
 			}
-			SnippetComments.pasteSnippetAsComment(snippet.snippet);
+			SnippetComments.paste(snippet.snippet);
 		}
 		quickPick.dispose();
 	});
@@ -175,7 +177,7 @@ async function rewriteRestOfFunction(): Promise<any> {
 
 	// 2. Paste the function again as a snippet.
 	// The cursor will automatically be below the snippet.
-	await SnippetComments.pasteSnippetAsComment(restOfFunctionText);
+	await SnippetComments.paste(restOfFunctionText);
 
 	// 3. Insert the text of the start line up to cursor position.
 	await editor?.edit(editBuilder => {
@@ -209,7 +211,7 @@ async function fixFunction(): Promise<void> {
 
 	// 2. Paste the function again as a snippet.
 	// The cursor will automatically be below the snippet.
-	await SnippetComments.pasteSnippetAsComment(restOfFunctionText + fixFunctionText);
+	await SnippetComments.paste(restOfFunctionText + fixFunctionText);
 
 	// 3. Insert the text of the start line up to cursor position.
 	let functionSignature = symbol.detail
@@ -230,7 +232,7 @@ async function copyLineWithContext(): Promise<void> {
 		prompt: 'Enter a context for the copied line.'
 	});
 	let textToInsert = 'Repeat the line above, but with ' + userInput;
-	SnippetComments.pasteSnippetAsComment(textToInsert);
+	SnippetComments.paste(textToInsert);
 	await editor.edit(editBuilder => {
 		editBuilder.insert(cursorPosition, '\n' + textToInsert + '\n');
 	});

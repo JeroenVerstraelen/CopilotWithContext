@@ -5,7 +5,7 @@ import { SymbolToString } from './sources/SymbolToString';
 
 export class SnippetComments {
 
-	static async pasteSnippetAsComment(snippet: string): Promise<void> {
+	static async paste(snippet: string): Promise<void> {
 		// TODO: Use TextLine.firstNonWhitespaceCharacterIndex to get the indentation level.
 		let editor = vscode.window.activeTextEditor;
 		if (editor) {
@@ -33,12 +33,8 @@ export class SnippetComments {
 		}
 	}
 
-	static async pasteSymbolAsComment(symbol: vscode.SymbolInformation): Promise<void> {
-		let snippet = await SymbolToString.anyToString(symbol);
-		SnippetComments.pasteSnippetAsComment(snippet);
-	}
-
-	static async removeFromFile(): Promise<void> {
+	// Removes any snippets from the current active text editor.
+	static async remove(): Promise<void> {
 		// Remove any text that starts with Config.snippetStartSymbol and ends with Config.snippetEndSymbol.
 		// E.g. <snippet>/nhello /nworld</snippet>
 		let editor = vscode.window.activeTextEditor;
