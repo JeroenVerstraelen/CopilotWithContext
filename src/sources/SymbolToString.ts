@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 import { commands } from 'vscode';
-import { WorkspaceSymbol, WorkspaceSymbols } from './WorkspaceSymbols';
+import { SimpleSymbol, SymbolInformationUtils } from './WorkspaceSymbols';
 
 export class SymbolToString {
 
-	static async symbolWithChildrenToString(workspaceSymbol: WorkspaceSymbol, referenceDepth = 0, maxReferenceDepth = 0): Promise<string> {
+	static async symbolWithChildrenToString(workspaceSymbol: SimpleSymbol, referenceDepth = 0, maxReferenceDepth = 0): Promise<string> {
 		if (referenceDepth > maxReferenceDepth) { return ''; }
-		let documentSymbol = await WorkspaceSymbols.getDocumentSymbol(workspaceSymbol);
+		let documentSymbol = await SymbolInformationUtils.getDocumentSymbol(workspaceSymbol);
 		if (!documentSymbol) { return "" }
 
 		// Go over every child and recursively add their definitions to the final string.
@@ -24,7 +24,7 @@ export class SymbolToString {
 	}
 
 	// Finds the definition documentsymbol of a variable or field.
-	static async symbolToDefinitionSymbol(field: vscode.DocumentSymbol, uri: vscode.Uri): Promise<WorkspaceSymbol | undefined>{
+	static async symbolToDefinitionSymbol(field: vscode.DocumentSymbol, uri: vscode.Uri): Promise<SimpleSymbol | undefined>{
 		let definitions: (vscode.Location | vscode.LocationLink)[] = await commands.executeCommand('vscode.executeTypeDefinitionProvider', uri, field.range.start);
 		if (definitions.length > 0) {
 			// We only allow one definition.
@@ -38,35 +38,35 @@ export class SymbolToString {
 				let fieldDocSymbols: vscode.DocumentSymbol[] = await commands.executeCommand('vscode.executeDocumentSymbolProvider', definition.uri);
 				let definitionSymbol = fieldDocSymbols.find(s => s.name == definitionName);
 				if (definitionSymbol) {
-					return new WorkspaceSymbol(definitionSymbol.name, definition.uri, definitionSymbol.range);
+					return new SimpleSymbol(definitionSymbol.name, definition.uri, definitionSymbol.range);
 				}
 			}
 		}
 		return undefined
 	}
 
-	static async functionSignatureToString(symbol: WorkspaceSymbol): Promise<string> {
+	static async functionSignatureToString(symbol: SimpleSymbol): Promise<string> {
 		let uri = symbol.uri;
 		let document = await vscode.workspace.openTextDocument(uri);
 		return document.lineAt(symbol.range.start.line).text
 	}
 
-	static async lineToString(symbol: WorkspaceSymbol): Promise<string> {
+	static async lineToString(symbol: SimpleSymbol): Promise<string> {
 		let uri = symbol.uri;
 		let document = await vscode.workspace.openTextDocument(uri);
 		let line = document.lineAt(symbol.range.start.line).text;
 		return line
 	}
 
-	static async workspaceSymbolToString(symbol: WorkspaceSymbol): Promise<string> {
-		let docSymbol: vscode.DocumentSymbol | undefined = await WorkspaceSymbols.getDocumentSymbol(symbol);
+	static async workspaceSymbolToString(symbol: SimpleSymbol): Promise<string> {
+		let docSymbol: vscode.DocumentSymbol | undefined = await SymbolInformationUtils.getDocumentSymbol(symbol);
 		if (!docSymbol) { return "" }
 		let document = await vscode.workspace.openTextDocument(symbol.uri);
 		return document.getText(docSymbol.range);
 	}
 
 	static async anyToString(symbol: vscode.SymbolInformation): Promise<string> {
-		let workspaceSymbol = WorkspaceSymbols.symbolInfoToWorkspaceSymbol(symbol);
+		let workspaceSymbol = SymbolInformationUtils.symbolInfoToSimpleSymbol(symbol);
 		switch (symbol.kind) {
 			case vscode.SymbolKind.Struct:
 				return await SymbolToString.symbolWithChildrenToString(workspaceSymbol, 0, 0);

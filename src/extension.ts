@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import { SnippetComments } from './SnippetComments';
 import { SnippetFile } from './sources/SnippetFile';
 import { Stackoverflow } from './sources/stackoverflow';
-import { WorkspaceSymbols } from './sources/WorkspaceSymbols';
+import { SymbolInformationUtils } from './sources/WorkspaceSymbols';
 import { symbolKindToString, stringToSymbolKind } from './utils/StringUtils';
 
 // this method is called when your extension is activated
@@ -92,7 +92,7 @@ async function pasteSnippetUsingPopupAsInput(initialInput: string = ''): Promise
 			quickPick.busy = true;
 			// Filter sources and combine.
 			// let filteredSnippets = snippetQuickpickItems.filter(snippet => snippet.label.includes(value));
-			symbols = await WorkspaceSymbols.getAny(value)
+			symbols = await SymbolInformationUtils.getAny(value)
 			let symbolQuickpickItems = symbols.map(symbol => <vscode.QuickPickItem>{ label: symbol.name, description: symbolKindToString[symbol.kind] });
 			let quickpickItems = snippetQuickpickItems.concat(symbolQuickpickItems);
 			
