@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { Config } from "./utils/Config";
-import { SymbolToString } from './sources/SymbolToString';
+import { SymbolToString } from './sources/symbol_to_string';
 
 
 export class SnippetComments {

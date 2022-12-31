@@ -60,7 +60,7 @@ export class Stackoverflow {
         const encodedTagsString = encodeURIComponent(tags.join(';'));
         const encodedAPISearchTerm = encodeURIComponent(updatedSearchTerm);
         const encodeWeb = encodeURIComponent(searchTerm);
-        const filter = encodeURIComponent('!6VClS.317RM6C(_Ig3IlHwys1')
+        const filter = encodeURIComponent('!6VClS.317RM6C(_Ig3IlHwys1');
         // const apiSearchUrl = `https://api.stackexchange.com/2.2/search?order=desc&sort=relevance&intitle=${encodedAPISearchTerm}&tagged=${encodedTagsString}&site=stackoverflow&key=${stackoverflowApiKey}`;
         const apiSearchUrl = `https://api.stackexchange.com/2.3/search/advanced?page=1&pagesize=10&order=desc&sort=relevance&accepted=True&closed=False&q=${encodedAPISearchTerm}&tagged=${encodedTagsString}&site=stackoverflow&key=${stackoverflowApiKey}&filter=${filter}`;
 
@@ -72,13 +72,13 @@ export class Stackoverflow {
             gzip: true,
         };
         
-        const searchResponseItems: StackoverflowItem[] = []
+        const searchResponseItems: StackoverflowItem[] = [];
         try {
             const searchResponse: StackoverflowResponse = await request.get(urlOpt);
             if (searchResponse.items && searchResponse.items.length > 0) {
                 searchResponse.items.forEach((q: StackoverflowItem, i: number) => {
                     q.title = `Q: ${decodeURIComponent(q.title)}`;
-                    searchResponseItems.push(q)
+                    searchResponseItems.push(q);
                 });
             }
         } catch (error) {

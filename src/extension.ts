@@ -2,12 +2,12 @@
 // Import the module and reference it with the alias vscode in your code below
 import G = require('glob');
 import * as vscode from 'vscode';
-import { SnippetComments } from './SnippetComments';
-import { SnippetFile } from './sources/SnippetFile';
+import { SnippetComments } from './snippet_comments';
+import { SnippetFile } from './sources/snippet_file';
 import { Stackoverflow } from './sources/stackoverflow';
-import { SymbolInformationUtils } from './sources/SymbolInformationUtils';
-import { SymbolToString } from './sources/SymbolToString';
-import { symbolKindToString, stringToSymbolKind } from './utils/StringUtils';
+import { SymbolInformationUtils } from './sources/symbol_information_utils';
+import { SymbolToString } from './sources/symbol_to_string';
+import { symbolKindToString, stringToSymbolKind } from './utils/string_utils';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -64,7 +64,7 @@ async function pasteSnippetUsingSelectionAsInput() {
 	var editor = vscode.window.activeTextEditor;
 	if (!editor) { return; }
 	let selection = editor.document.getText(editor.selection);
-	if (selection.length == 0) {
+	if (selection.length === 0) {
 		// If there is no selection, fall back to cursor.
 		pasteSnippetUsingCursorAsInput();
 		return;
@@ -75,16 +75,16 @@ async function pasteSnippetUsingSelectionAsInput() {
 // Selects a snippet or a symbol and pastes it as a comment.
 async function pasteSnippetUsingPopupAsInput(initialInput: string = ''): Promise<void> {
 	// Create a popup that automatically updates the input box while the user is typing.
-	let quickPick: vscode.QuickPick<vscode.QuickPickItem> = await vscode.window.createQuickPick<vscode.QuickPickItem>()
+	let quickPick: vscode.QuickPick<vscode.QuickPickItem> = await vscode.window.createQuickPick<vscode.QuickPickItem>();
 	quickPick.value = initialInput;
 	quickPick.matchOnDescription = true;
 	quickPick.matchOnDetail = true;
-	quickPick.placeholder = 'Select a snippet to add as a comment'
+	quickPick.placeholder = 'Select a snippet to add as a comment';
 
 	// Sources
 	let snippets: any[] = SnippetFile.getSnippets();
 	let snippetQuickpickItems = snippets.map(snippet => <vscode.QuickPickItem>{ label: snippet.title, description: "Snippet" });
-	var symbols: vscode.SymbolInformation[] = []
+	var symbols: vscode.SymbolInformation[] = [];
 
 	snippetQuickpickItems.push(<vscode.QuickPickItem>{ label: 'Search on stackoverflow', alwaysShow: true });
 	
@@ -93,7 +93,7 @@ async function pasteSnippetUsingPopupAsInput(initialInput: string = ''): Promise
 			quickPick.busy = true;
 			// Filter sources and combine.
 			// let filteredSnippets = snippetQuickpickItems.filter(snippet => snippet.label.includes(value));
-			symbols = await SymbolInformationUtils.getAny(value)
+			symbols = await SymbolInformationUtils.getAny(value);
 			let symbolQuickpickItems = symbols.map(symbol => <vscode.QuickPickItem>{ label: symbol.name, description: symbolKindToString[symbol.kind] });
 			let quickpickItems = snippetQuickpickItems.concat(symbolQuickpickItems);
 			
@@ -123,7 +123,7 @@ async function pasteSnippetUsingPopupAsInput(initialInput: string = ''): Promise
 			}
 			SnippetComments.paste(snippet);
 		} else {
-			let snippet = snippets.find(snippet => snippet.title === label)
+			let snippet = snippets.find(snippet => snippet.title === label);
 			if (!snippet) {
 				vscode.window.showErrorMessage('Snippet not found');
 				return;
@@ -134,7 +134,7 @@ async function pasteSnippetUsingPopupAsInput(initialInput: string = ''): Promise
 	});
 
 	quickPick.onDidHide(() => { quickPick.dispose(); });
-	quickPick.show()
+	quickPick.show();
 }
 
 async function rewriteRestOfFunction(): Promise<any> {
@@ -164,7 +164,7 @@ async function rewriteRestOfFunction(): Promise<any> {
 	}
 	let start = new vscode.Position(cursorPosition.line, 0);
 	let startLineText = editor.document.getText(new vscode.Range(start, cursorPosition));
-	let endLine = symbol.range.end.line - 1
+	let endLine = symbol.range.end.line - 1;
 	let endLineChar = editor.document.lineAt(endLine).text.length;
 	let end = new vscode.Position(endLine, endLineChar);
 	let restOfFunctionRange = new vscode.Range(start, end);
@@ -173,7 +173,7 @@ async function rewriteRestOfFunction(): Promise<any> {
 	await editor.edit(editBuilder => {
 		// 1. Remove the rest of the function.
 		editBuilder.delete(restOfFunctionRange);
-	})
+	});
 
 	// 2. Paste the function again as a snippet.
 	// The cursor will automatically be below the snippet.
@@ -196,25 +196,25 @@ async function fixFunction(): Promise<void> {
 	let cursorPosition = editor.selection.active;
 	let symbol = symbols.find(s => {
 		if (!s) { false; }
-		s.range.contains(cursorPosition) && (s.kind === vscode.SymbolKind.Function || s.kind === vscode.SymbolKind.Method)
+		s.range.contains(cursorPosition) && (s.kind === vscode.SymbolKind.Function || s.kind === vscode.SymbolKind.Method);
 	});
 	if (!symbol) { return; }
 
 	let restOfFunctionRange = symbol.range;
 	let restOfFunctionText = editor.document.getText(restOfFunctionRange);
-	let fixFunctionText = '\nThere is something wrong with this function. The fix can be found below.'
+	let fixFunctionText = '\nThere is something wrong with this function. The fix can be found below.';
 	// Convert restOfFunctionText to a snippet and move the cursor below it.
 	await editor.edit(editBuilder => {
 		// 1. Remove the rest of the function.
 		editBuilder.delete(restOfFunctionRange);
-	})
+	});
 
 	// 2. Paste the function again as a snippet.
 	// The cursor will automatically be below the snippet.
 	await SnippetComments.paste(restOfFunctionText + fixFunctionText);
 
 	// 3. Insert the text of the start line up to cursor position.
-	let functionSignature = symbol.detail
+	let functionSignature = symbol.detail;
 	await editor?.edit(editBuilder => {
 		if (editor) {
 			editBuilder.insert(editor.selection.start, functionSignature);

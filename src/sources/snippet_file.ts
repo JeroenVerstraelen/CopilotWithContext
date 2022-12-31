@@ -2,7 +2,7 @@ import fs = require('fs');
 import * as vscode from 'vscode';
 import { QuickPickOptions } from 'vscode';
 import { Config } from "../utils/Config";
-import { SnippetComments } from "../SnippetComments";
+import { SnippetComments } from "../snippet_comments";
 const path = require('path');
 
 export class SnippetFile {
@@ -34,7 +34,7 @@ export class SnippetFile {
 		let newSnippet = {
 			title: title,
 			snippet: snippet
-		}
+		};
 		snippets.push(newSnippet);
 		fs.writeFileSync(jsonFile, JSON.stringify(snippets));
 		vscode.window.showInformationMessage('Added selected text to ' + SnippetFile.fileName);

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { commands } from 'vscode';
-import { DocumentSymbolUtils } from './DocumentSymbolUtils';
-import { SymbolInformationUtils } from './SymbolInformationUtils';
+import { DocumentSymbolUtils } from './document_symbol_utils';
+import { SymbolInformationUtils } from './symbol_information_utils';
 
 export class SymbolToString {
 
@@ -20,7 +20,7 @@ export class SymbolToString {
 			if (definition) {
 				let [definitionSymbol, definitionUri] = definition;
 				let definitionAsString = await SymbolToString.symbolWithChildrenToString(definitionSymbol, definitionUri, referenceDepth + 1, maxReferenceDepth);
-				if (definitionAsString != '') {
+				if (definitionAsString !== '') {
 					returnString += '\n\n' + definitionAsString;
 				}
 			}
@@ -32,18 +32,18 @@ export class SymbolToString {
 		let document = await vscode.workspace.openTextDocument(symbol.location.uri);
 		// TODO: What about multiline function signatures?
 		// This information is not contained in the symbol information.
-		return document.lineAt(symbol.location.range.start.line).text
+		return document.lineAt(symbol.location.range.start.line).text;
 	}
 
 	static async lineToString(symbol: vscode.SymbolInformation): Promise<string> {
 		let document = await vscode.workspace.openTextDocument(symbol.location.uri);
 		let line = document.lineAt(symbol.location.range.start.line).text;
-		return line
+		return line;
 	}
 
 	static async workspaceSymbolToString(symbol: vscode.SymbolInformation): Promise<string> {
 		let docSymbol: vscode.DocumentSymbol | undefined = await DocumentSymbolUtils.getDocumentSymbol(symbol);
-		if (!docSymbol) { return "" }
+		if (!docSymbol) { return ""; };
 		return SymbolToString.documentSymbolToString(docSymbol, symbol.location.uri);
 	}
 
@@ -63,7 +63,7 @@ export class SymbolToString {
 			case vscode.SymbolKind.Variable:
 				return await SymbolToString.lineToString(workspaceSymbol);
 			default:
-				return await SymbolToString.workspaceSymbolToString(workspaceSymbol)
+				return await SymbolToString.workspaceSymbolToString(workspaceSymbol);
 		}
 	}
 }

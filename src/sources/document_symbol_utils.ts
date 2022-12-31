@@ -27,12 +27,12 @@ export class DocumentSymbolUtils {
 				let definitionName = definitionDocument.getText(definitionRange);
 				// Get the documentSymbol using this name.
 				let fieldDocSymbols: vscode.DocumentSymbol[] = await commands.executeCommand('vscode.executeDocumentSymbolProvider', definition.uri);
-				let definitionSymbol = fieldDocSymbols.find(s => s.name == definitionName);
+				let definitionSymbol = fieldDocSymbols.find(s => s.name === definitionName);
 				if (definitionSymbol) {
 					return [definitionSymbol, definition.uri];
 				}
 			}
 		}
-		return undefined
+		return undefined;
 	}
 }
