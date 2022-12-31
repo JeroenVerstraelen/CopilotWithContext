@@ -2,15 +2,7 @@ import * as vscode from 'vscode';
 import { commands } from 'vscode';
 import { Config } from "../utils/Config";
 
-export class SimpleSymbol {
-	constructor(public name: string, public uri: vscode.Uri, public range: vscode.Range) { }
-}
-
 export class SymbolInformationUtils {
-
-	static symbolInfoToSimpleSymbol(symbolInformation: vscode.SymbolInformation): SimpleSymbol {
-		return new SimpleSymbol(symbolInformation.name, symbolInformation.location.uri, symbolInformation.location.range);
-	}
 
 	static async getWorkspaceSymbolInformation(name: string, filterKind: vscode.SymbolKind) {
 		let editor = vscode.window.activeTextEditor;
@@ -21,10 +13,11 @@ export class SymbolInformationUtils {
 		return filteredSymbols;
 	}
 
-	static async getDocumentSymbol(inputSymbol: SimpleSymbol): Promise<vscode.DocumentSymbol | undefined> {
-		let documentSymbols: vscode.DocumentSymbol[] = await vscode.commands.executeCommand('vscode.executeDocumentSymbolProvider', inputSymbol.uri);
+	static async getDocumentSymbol(inputSymbol: vscode.SymbolInformation): Promise<vscode.DocumentSymbol | undefined> {
+		// Assume executeDocumentSymbolProvider only returns DocumentSymbols.
+		let documentSymbols: vscode.DocumentSymbol[] = await vscode.commands.executeCommand('vscode.executeDocumentSymbolProvider', inputSymbol.location.uri);
 		if (documentSymbols !== undefined) {
-			let documentSymbol: vscode.DocumentSymbol | undefined = documentSymbols.find(s => s.range.start.line === inputSymbol.range.start.line);
+			let documentSymbol: vscode.DocumentSymbol | undefined = documentSymbols.find(s => s.range.start.line === inputSymbol.location.range.start.line);
 			return documentSymbol;
 		}
 	}

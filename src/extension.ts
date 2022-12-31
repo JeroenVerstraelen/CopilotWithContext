@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import { SnippetComments } from './SnippetComments';
 import { SnippetFile } from './sources/SnippetFile';
 import { Stackoverflow } from './sources/stackoverflow';
-import { SymbolInformationUtils } from './sources/WorkspaceSymbols';
+import { SymbolInformationUtils } from './sources/SymbolInformationUtils';
 import { symbolKindToString, stringToSymbolKind } from './utils/StringUtils';
 
 // this method is called when your extension is activated
