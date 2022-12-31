@@ -13,15 +13,6 @@ export class SymbolInformationUtils {
 		return filteredSymbols;
 	}
 
-	static async getDocumentSymbol(inputSymbol: vscode.SymbolInformation): Promise<vscode.DocumentSymbol | undefined> {
-		// Assume executeDocumentSymbolProvider only returns DocumentSymbols.
-		let documentSymbols: vscode.DocumentSymbol[] = await vscode.commands.executeCommand('vscode.executeDocumentSymbolProvider', inputSymbol.location.uri);
-		if (documentSymbols !== undefined) {
-			let documentSymbol: vscode.DocumentSymbol | undefined = documentSymbols.find(s => s.range.start.line === inputSymbol.location.range.start.line);
-			return documentSymbol;
-		}
-	}
-
 	static async getAny(name: string): Promise<vscode.SymbolInformation[]> {
 		let editor = vscode.window.activeTextEditor;
 		if (!editor) { return []; }
