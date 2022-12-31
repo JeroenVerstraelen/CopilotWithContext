@@ -30,6 +30,8 @@ export class SymbolToString {
 
 	static async functionSignatureToString(symbol: vscode.SymbolInformation): Promise<string> {
 		let document = await vscode.workspace.openTextDocument(symbol.location.uri);
+		// TODO: What about multiline function signatures?
+		// This information is not contained in the symbol information.
 		return document.lineAt(symbol.location.range.start.line).text
 	}
 
